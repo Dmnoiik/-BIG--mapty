@@ -95,6 +95,8 @@ inputType.addEventListener('change', function (e) {
 /////////////////////////////////////////////////////////////////////////////
 ///////// REFACTORING THE CODE TO CLASSES
 
+/////////////////////////////////////////////////
+//// APPLICATION ARCHITECTURE
 class App {
   #map;
   #mapEvent;
@@ -119,14 +121,14 @@ class App {
   }
 
   #loadMap(position) {
-    console.log(position);
+    // console.log(position);
     const { latitude } = position.coords;
     const { longitude } = position.coords;
 
     //   console.log(`https://www.google.pl/maps/@${latitude},${longitude}`); /// google map link has latitude and longitude in it, so we use our variables to create that link with template literal
 
     const coords = [latitude, longitude];
-    console.log(this);
+    // console.log(this);
     this.#map = L.map('map').setView(coords, 13);
 
     // console.log(map);
@@ -183,3 +185,46 @@ class App {
 }
 
 const app = new App();
+
+class Workout {
+  date = new Date();
+  id = (Date.now() + '').slice(-10);
+
+  constructor(coords, distance, duration) {
+    this.coords = coords; /// [lat, lng]
+    this.distance = distance; // in km
+    this.duration = duration; // in min
+  }
+}
+
+class Running extends Workout {
+  constructor(coords, distance, duration, cadence) {
+    super(coords, distance, duration);
+    this.cadence = cadence;
+    this.calcPace();
+  }
+
+  calcPace() {
+    // min/km
+    this.pace = this.duration / this.distance;
+    return this.pace;
+  }
+}
+class Cycling extends Workout {
+  constructor(coords, distance, duration, elevationGain) {
+    super(coords, distance, duration);
+    this.elevationGain = elevationGain;
+    this.calcSpeed();
+  }
+
+  calcSpeed() {
+    // km/h
+    this.speed = this.distance / (this.duration / 60);
+    return this.speed;
+  }
+}
+
+// const run1 = new Running([39, -12], 5.2, 24, 178);
+// const cycling1 = new Cycling([39, -12], 27, 95, 523);
+// console.log(run1);
+// console.log(cycling1);
