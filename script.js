@@ -105,8 +105,13 @@ class App {
   #workouts = [];
   /// constructor is executed as soon as page loads so we can use that method that loads the map
   constructor() {
+    // get user's position
     this.#getPosition();
 
+    // get data from local storage
+    this.#getLocalStorage();
+
+    // Attach event handlers
     form.addEventListener('submit', this.#newWorkout.bind(this));
     inputType.addEventListener('change', this.#toggleElevationField);
     containerWorkouts.addEventListener('click', this.#moveToPopup.bind(this));
@@ -147,6 +152,10 @@ class App {
 
     /// Handling clicks on map
     this.#map.on('click', this.#showForm.bind(this));
+
+    this.#workouts.forEach(workout => {
+      this.#renderWorkoutMarker(workout);
+    });
   }
 
   #showForm(mapE) {
@@ -226,6 +235,8 @@ class App {
     // Clear input fields
     this.#hideForm();
 
+    // Set local storage to all workouts
+    this.#setLocalStorage();
     /// mapEvent is declared as global variable
   }
 
@@ -303,7 +314,7 @@ class App {
     const workout = this.#workouts.find(
       work => work.id === workoutEl.dataset.id
     );
-    console.log(workout);
+    // console.log(workout);
 
     this.#map.setView(workout.coords, this.#mapZoomLevel, {
       animate: true,
@@ -311,9 +322,28 @@ class App {
         duration: 1,
       },
     });
+  }
 
-    /// using the public interface
-    workout.click();
+  #setLocalStorage() {
+    /// JSON.stringify -> convert object to string
+    localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+  }
+  #getLocalStorage() {
+    // JSON.parse is opossite of JSON.stringify
+    const data = JSON.parse(localStorage.getItem('workouts'));
+    // console.log(data);
+
+    if (!data) return;
+
+    this.#workouts = data;
+    this.#workouts.forEach(workout => {
+      this.#renderWorkout(workout);
+    });
+  }
+
+  reset() {
+    localStorage.removeItem('workouts');
+    location.reload();
   }
 }
 
@@ -337,10 +367,6 @@ class Workout {
     this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${
       months[this.date.getMonth()]
     } ${this.date.getDate()}`;
-  }
-
-  click() {
-    this.clicks++;
   }
 }
 
